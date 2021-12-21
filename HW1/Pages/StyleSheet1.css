@@ -1,0 +1,19 @@
+﻿#ph{
+    width: 80%;
+    margin: 0px auto;
+}
+#header {
+    width: 80%;
+    margin: 0px auto;
+}
+p {
+    font-size: 16px;
+}
+
+img {
+    height: 300px;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}

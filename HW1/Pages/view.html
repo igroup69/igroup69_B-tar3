@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous">
+    </script>
+    <link href="StyleSheet1.css" rel="stylesheet" />
+    <script src="../Scripts/ajaxCalls.js"></script>
+
+    <link href="popUpStyleSh.css" rel="stylesheet" />
+
+    <script>
+
+        $(document).ready(function () {
+
+            ajaxCall("GET", "../api/News", '', getNameListSuccessCB, getNameListErrorCB);
+            $(document).on('change', '#select1', getAllSelectedNews);
+
+            $("#myForm").submit(f1); // Submit the form
+
+        });
+
+
+        function getNameListSuccessCB(names) {
+
+            str = "<p>Select one series name:</p>";
+            str += "<select id='select1'>";
+            str += "<option> </option>";
+            for (var i = 0; i < names.length; i++) {
+                str += "<option>" + names[i] + "</option>";
+            }
+            str += "</select>";
+            $("#header").html(str);
+
+        }
+
+        function getNameListErrorCB(err) {
+            alert("get name list not sucsses")
+            console.log(err);
+        }
+
+        function getAllSelectedNews() {
+
+            let name = $(this).val();
+            console.log(name);
+            let url = "../api/News?name=" + name;
+
+            ajaxCall("GET", url, '', getAllSelectedNewsSuccessCB, getAllSelectedNewsErrorCB);
+        }
+
+        function getAllSelectedNewsSuccessCB(selectedNews) {
+
+            console.log(selectedNews);
+
+            str = "";
+            for (let i = 0; i < selectedNews.length; i++) {
+                str += "<div id = " + selectedNews[i].Id + ">";
+                    str += "<h3> " + selectedNews[i].Head + "</h3>";
+                    str += "<p> " + selectedNews[i].Body + " </p>";
+                    str += "<p>" + selectedNews[i].Source + "</p>";
+                    str += "<p>" + selectedNews[i].PublishDateTime + "</p> ";
+                    str += "<img src=" + selectedNews[i].Image + " /> ";
+                    str += "<p> <a href= " + selectedNews[i].Link + ">Press here get to this artical news</a></p> ";
+                    str += '<button onclick="openForm(this)">Add Review</button>';
+                str += "</div>";
+            }
+            $("#ph").html(str);
+
+        }
+
+        function getAllSelectedNewsErrorCB(err) {
+            console.log(err);
+        }
+
+        var id = '';
+
+        function openForm(btn) {
+
+            let div = $(btn).parent();
+            id = div.attr('id');
+            console.log(div);
+            console.log(id);
+
+            document.getElementById("myForm").style.display = "block";
+        }
+
+        function closeForm() {
+            document.getElementById("myForm").style.display = "none";
+            clearForm();
+        }
+
+        function clearForm() {
+            $("#critName").val('');
+            $("#email").val('');
+            $("#rating").val('');
+            $("#contents").val('');
+        }
+
+        function f1() {
+            
+            myReview = {
+                Id: id,
+                CriticName: $("#critName").val(),
+                Email: $("#email").val(),
+                ReviewDateTime: new Date(Date.now()).toLocaleDateString(),
+                Rating: $("#rating").val(),
+                Contents: $("#contents").val(),
+            }
+            console.log(myReview);
+
+            ajaxCall("POST", "../api/Reviews", JSON.stringify(myReview), postSCB, postECB);
+            
+            closeForm();
+            return false;
+        }
+
+
+        function postSCB(status) {
+            alert(status + "- post review succeeded"); // 1 - post succeeded
+            console.log(status);
+        }
+
+        function postECB(err) {
+            alert("post review not succeeded");
+            console.log(err);
+        }
+
+
+
+
+    </script>
+
+</head>
+<body>
+    <div id="header"></div>
+    <div id="ph"> </div>
+
+    <div class="form-popup" id="myForm">
+        <form action="/action_page.php" class="form-container">
+            <h1>Review</h1>
+
+            <label><b>name</b></label>
+            <input type="text" id="critName" placeholder="Enter Name" minlength="2" maxlength="30" required>
+
+            <label><b>email</b></label>
+            <input type="text" id="email" placeholder="Enter Email" required>
+
+            <label><b>rate</b></label>
+            <input type="number" id="rating" placeholder="Between 1-5" min="1" max="5" required />
+
+            <label><b>contents</b></label>
+            <input type="text" id="contents" placeholder="10-200 characters" minlength="10" maxlength="200" required />
+
+            <button type="submit" class="btn">Add Review</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+        </form>
+        
+    </div>
+</body>
+</html>

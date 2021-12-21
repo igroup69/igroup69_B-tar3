@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous">
+    </script>
+    <script src="../Scripts/ajaxCallsWithKey.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <link href="StyleSheet1.css" rel="stylesheet" />
+    <link href="popUpStyleSh.css" rel="stylesheet" />
+
+    <script>
+
+        $(document).ready(function () {
+            $("#getTV").click(getTV);
+
+            $(document).on('click', '.addNewsBTN', addNews);
+
+
+        });
+
+        function getTV() {
+
+            let name = $("#tvShowName").val();
+            let apiCall = "https://imdb8.p.rapidapi.com/title/find?q=" + name;
+
+            ajaxCall2("GET", apiCall, "", getTVSuccessCB, getTVErrorCB);
+        }
+
+        var id1 = '';
+        var artId = '';
+
+        function getTVSuccessCB(tv) {
+
+            id1 = tv.results[0].id.slice(7, -1);
+            let apiCall = "https://imdb8.p.rapidapi.com/title/get-news?tconst=" + id1 + "&limit=10";
+            ajaxCall2("GET", apiCall, "", getNewsSuccessCB, getNewsErrorCB);
+
+        }
+
+        function getTVErrorCB(err) {
+            alert("get tv - not succeed");
+            console.log(err);
+        }
+
+        var name = '';
+
+        function getNewsSuccessCB(news) {
+
+            console.log(news);
+
+            name = $("#tvShowName").val();
+
+            str = "";
+            for (let i = 0; i < news.items.length; i++) {
+                artId = news.items[i].id.slice(11);
+                str += "<div id = "+ artId +">";
+                    str += "<h3 class='head'> " + news.items[i].head + "</h3>";
+                    str += "<p class='body'> " + news.items[i].body + " </p>";
+                    str += "<p class='source'>" + news.items[i].source.label + "</p>";
+                    str += "<p class='DateTime'>" + news.items[i].publishDateTime + "</p> ";
+                    str += "<img src="+ news.items[i].image.url+" /> ";
+                    str += "<p> <a href= " + news.items[i].link + ">Press here get to this artical news</a></p> ";
+                    str += "<button class='addNewsBTN'>Add News</button>";
+                str += "</div>";
+            }
+            $("#ph").html(str);
+
+            console.log(news);
+        }
+
+        function getNewsErrorCB(err) {
+            alert("get news - not succeed");
+            console.log(err);
+        }
+
+        function addNews() {
+
+            let div = $(this).parent();
+            let id = div.attr('id');
+
+            let head = $("#" + id + " .head").html();
+            let body = $("#" + id + " .body").html();
+            let source = $("#" + id + " .source").html();
+            let publishDateTime = $("#" + id + " .DateTime").html();
+            let image = $("#" + id + " img").attr('src');
+            let link = $("#" + id + " a").attr('href');
+
+            myArticle = {
+                Id: id,
+                SeriesName: name,
+                Head: head,
+                Body: body,
+                Source: source,
+                PublishDateTime: publishDateTime,
+                Image: image,
+                Link:link
+            }
+
+            console.log(myArticle);
+
+            ajaxCall("POST", "../api/News", JSON.stringify(myArticle), postSCB, postECB);
+            
+        }
+
+        function postSCB(status) {
+
+            alert(status + "- post news succeeded"); // 1 - post succeeded
+            console.log(status);
+        }
+
+        function postECB(err) {
+            console.log(err);
+        }
+
+
+
+
+    </script>
+</head>
+<body>
+    <div id="header">
+        <input type="text" id="tvShowName" />
+        <button id="getTV">Get TV Show</button>
+        <p>
+            <a href="view.html">Press here get to view.html</a><br/>
+            <a href="AllReviews.html">Press here get to AllReviews.html</a>
+        </p>
+    </div>
+    
+    <div id="ph"> </div>
+
+
+
+</body>
+</html>
